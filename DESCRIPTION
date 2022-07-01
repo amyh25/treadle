@@ -13,7 +13,9 @@ Imports:
     cowplot,
     dplyr,
     ggplot2,
+    loomR,
     purrr,
+    SeuratDisk,
     stringr,
     tibble,
     tidyr
