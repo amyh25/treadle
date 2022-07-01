@@ -16,7 +16,8 @@ plot_gene_umap_from_loom(
   ncol = length(genes),
   label = FALSE,
   combine = TRUE,
-  drop_na = TRUE
+  drop_na = TRUE,
+  ...
 )
 }
 \arguments{
@@ -52,7 +53,9 @@ variables)}
 \item{combine}{whether to combine the plots}
 
 \item{drop_na}{Whether or not to drop NAs per the color aesthetic;
-also drops rows with "NA" strings}
+also drops rows with "NA" strings
+
+Also will pass any additional named arguments into \code{plot_umap}}
 }
 \value{
 A ggplot object showing UMAP plot
