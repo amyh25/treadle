@@ -17,7 +17,8 @@ plot_gene_umap_from_loom(
   label = FALSE,
   combine = TRUE,
   drop_na = TRUE,
-  ...
+  pt_size = 0.1,
+  pt_stroke = 0.5
 )
 }
 \arguments{
@@ -53,9 +54,13 @@ variables)}
 \item{combine}{whether to combine the plots}
 
 \item{drop_na}{Whether or not to drop NAs per the color aesthetic;
-also drops rows with "NA" strings
+also drops rows with "NA" strings}
 
-Also will pass any additional named arguments into \code{plot_umap}}
+\item{pt_size}{(default: 0.1)}
+
+\item{pt_stroke}{(default: 0.5)}
+
+\item{Also}{will pass any additional named arguments into \code{plot_umap}}
 }
 \value{
 A ggplot object showing UMAP plot

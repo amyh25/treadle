@@ -15,7 +15,9 @@ plot_var_umap_from_loom(
   ncol = length(select_cols),
   label = FALSE,
   combine = TRUE,
-  drop_na = TRUE
+  drop_na = TRUE,
+  pt_size = 0.1,
+  pt_stroke = 0.5
 )
 }
 \arguments{
@@ -50,6 +52,10 @@ variables)}
 
 \item{drop_na}{Whether or not to drop NAs per the color aesthetic;
 also drops rows with "NA" strings}
+
+\item{pt_size}{(default: 0.1)}
+
+\item{pt_stroke}{(default: 0.5)}
 }
 \value{
 A ggplot object showing UMAP plot

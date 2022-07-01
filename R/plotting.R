@@ -215,6 +215,10 @@ detect_pca_cols <- function(lfile, pc_str = "RNAPC") {
 #' @param combine whether to combine the plots
 #' @param drop_na Whether or not to drop NAs per the color aesthetic;
 #'  also drops rows with "NA" strings
+#' @param pt_size (default: 0.1)
+#' @param pt_stroke (default: 0.5)
+#' @param
+#'
 #'
 #' Also will pass any additional named arguments into `plot_umap`
 #'
@@ -233,7 +237,8 @@ plot_gene_umap_from_loom <- function(lfile, genes,
                                      label = FALSE,
                                      combine = TRUE,
                                      drop_na = TRUE,
-                                     ...) {
+                                     pt_size = 0.1,
+                                     pt_stroke = 0.5) {
 
   genes <- genes %>% set_names()
 
@@ -274,7 +279,8 @@ plot_gene_umap_from_loom <- function(lfile, genes,
                        umap1_str = umap_cols[1], umap2_str = umap_cols[2],
                        drop_na = drop_na,
                        label = label,
-                       ...) +
+                       pt_size = pt_size,
+                       stroke_size = pt_stroke) +
       ggplot2::scale_color_gradient(low = "grey", high = "darkblue")
   } else {
 
@@ -284,7 +290,8 @@ plot_gene_umap_from_loom <- function(lfile, genes,
         plot_umap(plot_df, ..1,
                   umap1_str = umap_cols[1], umap2_str = umap_cols[2],
                   label = label,
-                  ...) +
+                  pt_size = pt_size,
+                  stroke_size = pt_stroke) +
           ggplot2::scale_color_gradient(low = "grey", high = "darkblue")
       })
 
@@ -326,6 +333,8 @@ plot_gene_umap_from_loom <- function(lfile, genes,
 #' @param combine whether to combine the plots
 #' @param drop_na Whether or not to drop NAs per the color aesthetic;
 #'  also drops rows with "NA" strings
+#' @param pt_size (default: 0.1)
+#' @param pt_stroke (default: 0.5)
 #'
 #' @return A ggplot object showing UMAP plot
 #' @export
@@ -340,7 +349,9 @@ plot_var_umap_from_loom <- function(lfile, var_str,
                                     ncol = length(select_cols),
                                     label = FALSE,
                                     combine = TRUE,
-                                    drop_na = TRUE) {
+                                    drop_na = TRUE,
+                                    pt_size = 0.1,
+                                    pt_stroke = 0.5) {
 
   var_df <- purrr::map_dfc(var_str, ~lfile[[paste0("col_attrs/", ..1)]][])
   colnames(var_df) <- var_str
@@ -376,14 +387,18 @@ plot_var_umap_from_loom <- function(lfile, var_str,
     plots <- plot_umap(plot_df, var_str,
                        umap1_str = umap_cols[1], umap2_str = umap_cols[2],
                        drop_na = drop_na,
-                       label = label)
+                       label = label,
+                       pt_size = pt_size,
+                       pt_stroke = pt_stroke)
   } else {
 
     plot_list <- var_str %>%
       map(~plot_umap(plot_df, ..1,
                      umap1_str = umap_cols[1], umap2_str = umap_cols[2],
                      drop_na = drop_na,
-                     label = label))
+                     label = label,
+                     pt_size = pt_size,
+                     pt_stroke = pt_stroke))
 
     if (combine) {
       plots <- plot_list %>%
