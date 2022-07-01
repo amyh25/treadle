@@ -151,7 +151,7 @@ plot_umap <- function(plot_df,
   }
   if (label) {
     p <- p +
-      ggplot2::geom_text_repel(
+      ggrepel::geom_text_repel(
         ggplot2::aes(UMAP_1, UMAP_2, label = !!color_sym),
         color = "black", size = label_text_size,
         data = ~..1 %>%

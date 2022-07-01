@@ -13,6 +13,7 @@ Imports:
     cowplot,
     dplyr,
     ggplot2,
+    ggrepel,
     loomR,
     purrr,
     SeuratDisk,
