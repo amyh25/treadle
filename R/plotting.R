@@ -280,7 +280,7 @@ plot_gene_umap_from_loom <- function(lfile, genes,
                        drop_na = drop_na,
                        label = label,
                        pt_size = pt_size,
-                       stroke_size = pt_stroke) +
+                       pt_stroke = pt_stroke) +
       ggplot2::scale_color_gradient(low = "grey", high = "darkblue")
   } else {
 
@@ -291,7 +291,7 @@ plot_gene_umap_from_loom <- function(lfile, genes,
                   umap1_str = umap_cols[1], umap2_str = umap_cols[2],
                   label = label,
                   pt_size = pt_size,
-                  stroke_size = pt_stroke) +
+                  pt_stroke = pt_stroke) +
           ggplot2::scale_color_gradient(low = "grey", high = "darkblue")
       })
 
