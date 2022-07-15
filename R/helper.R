@@ -15,12 +15,12 @@ get_genes_from_loom <- function(lfile, genes,
                                 select_row = "Gene") {
 
   if (select_layer == "matrix") {
-    gene_df <- map_dfc(
+    gene_df <- purrr::map_dfc(
       genes,
       ~{lfile[[select_layer]][, which(lfile[[paste0("row_attrs/", select_row)]][] == ..1)]}
     )
   } else {
-    gene_df <- map_dfc(
+    gene_df <- purrr::map_dfc(
       genes,
       ~lfile[[paste0("layers/", select_layer)]][, which(lfile[[paste0("row_attrs/", select_row)]][] == ..1)]
     )

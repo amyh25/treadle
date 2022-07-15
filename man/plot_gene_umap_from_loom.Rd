@@ -58,9 +58,9 @@ also drops rows with "NA" strings}
 
 \item{pt_size}{(default: 0.1)}
 
-\item{pt_stroke}{(default: 0.5)}
+\item{pt_stroke}{(default: 0.5)
 
-\item{Also}{will pass any additional named arguments into \code{plot_umap}}
+Also will pass any additional named arguments into \code{plot_umap}}
 }
 \value{
 A ggplot object showing UMAP plot

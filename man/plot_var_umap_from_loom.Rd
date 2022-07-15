@@ -17,7 +17,8 @@ plot_var_umap_from_loom(
   combine = TRUE,
   drop_na = TRUE,
   pt_size = 0.1,
-  pt_stroke = 0.5
+  pt_stroke = 0.5,
+  factor_vars = NULL
 )
 }
 \arguments{
@@ -56,6 +57,8 @@ also drops rows with "NA" strings}
 \item{pt_size}{(default: 0.1)}
 
 \item{pt_stroke}{(default: 0.5)}
+
+\item{factor_vars}{character vector specifying which variables to set as factors (default: NULL)}
 }
 \value{
 A ggplot object showing UMAP plot

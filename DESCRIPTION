@@ -1,10 +1,9 @@
 Package: treadle
-Title: To help make your loom object analyses more efficient
+Title: Analyze loom objects
 Version: 0.0.0.9000
 Authors@R: 
-    person("Amy", "Huang", , "amy_huang@hms.harvard.edu", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Amy", "Huang", , "amy_huang@hms.harvard.edu", role = c("aut", "cre"))
+Description: To help make your loom object analyses more efficient. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -19,7 +18,11 @@ Imports:
     SeuratDisk,
     stringr,
     tibble,
-    tidyr
+    tidyr,
+    magrittr,
+    readr,
+    Seurat,
+    rlang
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

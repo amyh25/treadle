@@ -75,20 +75,20 @@ scp_export_metadata_from_loom <- function(lfile, output_dir,
   } else {
 
     if (!is.na(str_subset_regex_group)) {
-      other_cols_to_select_group <- str_subset(names(lfile$col.attrs), str_subset_regex_group)
+      other_cols_to_select_group <- stringr::str_subset(names(lfile$col.attrs), str_subset_regex_group)
       metadata_cols <- c(metadata_cols, other_cols_to_select_group)
       metadata_col_types <- c(metadata_col_types,
                               rep("group", (length(other_cols_to_select_group))))
     }
     if (!is.na(str_subset_regex_numeric)) {
-      other_cols_to_select_num <- str_subset(names(lfile$col.attrs), str_subset_regex_numeric)
+      other_cols_to_select_num <- stringr::str_subset(names(lfile$col.attrs), str_subset_regex_numeric)
       metadata_cols <- c(metadata_cols, other_cols_to_select_num)
       metadata_col_types <- c(metadata_col_types,
                               rep("numeric", (length(other_cols_to_select_num))))
     }
 
     metadata_df <- metadata_cols %>%
-      set_names() %>%
+      rlang::set_names() %>%
       purrr::map_dfc(~lfile$col.attrs[[..1]][])
 
   }
@@ -97,9 +97,8 @@ scp_export_metadata_from_loom <- function(lfile, output_dir,
     colnames() %>%
     stringr::str_replace_all("\\.", "_")
 
-  write_tsv(metadata_df, file.path(output_dir, "tmp.txt"))
-  f_clustering_raw <- file(file.path(output_dir, "tmp.txt"),
-                           open = "r")
+  readr::write_tsv(metadata_df, file.path(output_dir, "tmp.txt"))
+  f_clustering_raw <- file(file.path(output_dir, "tmp.txt"), open = "r")
   lines <- readLines(f_clustering_raw)
   close(f_clustering_raw)
   new_lines <- c(lines[1], metadata_col_types_line, lines[2:length(lines)])
@@ -116,6 +115,7 @@ scp_export_metadata_from_loom <- function(lfile, output_dir,
 #' @param lfile a connected loom file
 #' @param output_dir output directory
 #' @param filename filename (default: "scp_clustering")
+#' @param umap_cols character vector of length 2 specifying names of UMAP columns
 #' @param str_subset_regex_group string denoting regular expression to select
 #'  group variables from cell-level metadata
 #' @param str_subset_regex_numeric string denoting regular expression to select
@@ -160,13 +160,13 @@ scp_export_clustering_from_loom <- function(lfile,
 
   ### add other cols
   if (!is.na(str_subset_regex_group)) {
-    other_cols_to_select_group <- str_subset(names(lfile$col.attrs), str_subset_regex_group)
+    other_cols_to_select_group <- stringr::str_subset(names(lfile$col.attrs), str_subset_regex_group)
     metadata_cols <- c(metadata_cols, other_cols_to_select_group)
     metadata_col_types <- c(metadata_col_types,
                             rep("group", (length(other_cols_to_select_group))))
   }
   if (!is.na(str_subset_regex_numeric)) {
-    other_cols_to_select_num <- str_subset(names(lfile$col.attrs), str_subset_regex_numeric)
+    other_cols_to_select_num <- stringr::str_subset(names(lfile$col.attrs), str_subset_regex_numeric)
     metadata_cols <- c(metadata_cols, other_cols_to_select_num)
     metadata_col_types <- c(metadata_col_types,
                             rep("numeric", (length(other_cols_to_select_num))))
@@ -174,8 +174,9 @@ scp_export_clustering_from_loom <- function(lfile,
 
   ### get data
   metadata_col_types_line <- paste0(metadata_col_types, collapse = "\t")
-  metadata_df <- metadata_cols %>% set_names() %>%
-    map_dfc(~lfile$col.attrs[[..1]][])
+  metadata_df <- metadata_cols %>%
+    rlang::set_names() %>%
+    purrr::map_dfc(~lfile$col.attrs[[..1]][])
 
   ### change name of NAME and umap cols
   tbl_names <- names(metadata_df)
@@ -185,11 +186,11 @@ scp_export_clustering_from_loom <- function(lfile,
   ### select cells
   if (!is.null(include_cells)) {
     metadata_df <- metadata_df %>%
-      filter(NAME %in% include_cells)
+      dplyr::filter(NAME %in% include_cells)
   }
 
   ### write
-  write_tsv(metadata_df, file.path(output_dir, "tmp.txt"))
+  readr::write_tsv(metadata_df, file.path(output_dir, "tmp.txt"))
   f_clustering_raw <- file(file.path(output_dir, "tmp.txt"),
                            open = "r")
   lines <- readLines(f_clustering_raw)
@@ -231,11 +232,11 @@ scp_export_matrix_from_loom <- function(lfile,
   }
   rownames(matrix_t) <- lfile$row.attrs[[Gene]][]
   colnames(matrix_t) <- lfile$col.attrs[[NAME]][]
-  tbl_t <- as_tibble(matrix_t, rownames = "GENE")
+  tbl_t <- tibble::as_tibble(matrix_t, rownames = "GENE")
   if (gzip) {
-    write_tsv(tbl_t, file.path(output_dir, paste0("scp_layer_", layer_name, ".txt.gz")))
+    readr::write_tsv(tbl_t, file.path(output_dir, paste0("scp_layer_", layer_name, ".txt.gz")))
   } else {
-    write_tsv(tbl_t, file.path(output_dir, paste0("scp_layer_", layer_name, ".txt")))
+    readr::write_tsv(tbl_t, file.path(output_dir, paste0("scp_layer_", layer_name, ".txt")))
   }
   message("done!")
 }

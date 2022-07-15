@@ -1,4 +1,4 @@
 library(testthat)
-library(treadleLoom)
+library(treadle)
 
-test_check("treadleLoom")
+test_check("treadle")

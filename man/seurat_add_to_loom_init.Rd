@@ -21,6 +21,8 @@ seurat_add_to_loom_init(
 \arguments{
 \item{so}{Seurat object}
 
+\item{filename}{file path for export}
+
 \item{clustering_assay}{string specifying clustering assay}
 
 \item{species__ontology_label}{string specifying species__ontology_label required by the Single Cell Portal (default: "Mus musculus")}
@@ -37,7 +39,7 @@ seurat_add_to_loom_init(
 
 \item{library_preparation_protocol__ontology_label}{etc. (default: "10x 5' v2")}
 
-\item{library_preparation_protcol}{etc. (default: "EFO_0009900")}
+\item{library_preparation_protocol}{etc. (default: "EFO_0009900")}
 }
 \value{
 connection to the newly created loom file

@@ -22,6 +22,8 @@ scp_export_clustering_from_loom(
 
 \item{filename}{filename (default: "scp_clustering")}
 
+\item{umap_cols}{character vector of length 2 specifying names of UMAP columns}
+
 \item{str_subset_regex_group}{string denoting regular expression to select
 group variables from cell-level metadata}
 

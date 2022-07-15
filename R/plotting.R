@@ -4,13 +4,16 @@
 #' @param x categorical variable (symbol)
 #' @param gene gene expression variable (symbol)
 #'
+#' @example
+#' plot_gene_violin(plot_df, orig.ident, Cd8a)
+#'
 #' @return A ggplot object showing violin plot
 #' @export
 #'
 
 plot_gene_violin <- function(plot_df, x, gene) {
-  x <- enquo(x)
-  gene <- enquo(gene)
+  x <- rlang::enquo(x)
+  gene <- rlang::enquo(gene)
 
   plot_df %>%
     ggplot2::ggplot() +
@@ -26,7 +29,7 @@ subset_columns <- function(plot_df, subset_cols) {
     } else {
       for (i in 1:length(subset_cols)) {
         plot_df <- plot_df %>%
-          dplyr::filter(!!sym(names(subset_cols)[i]) == subset_cols[i])
+          dplyr::filter(!!rlang::sym(names(subset_cols)[i]) == subset_cols[i])
       }
     }
   }
@@ -67,7 +70,7 @@ plot_gene_violin_from_loom <- function(lfile, genes,
                                        ncol = length(genes),
                                        combine = TRUE) {
 
-  genes <- genes %>% set_names()
+  genes <- rlang::set_names(genes)
   gene_df <- get_genes_from_loom(lfile, genes, select_layer, select_row)
 
   cell_selected_metadata_df <- purrr::map_dfc(select_cols, ~lfile[[paste0("col_attrs/", ..1)]][])
@@ -79,18 +82,21 @@ plot_gene_violin_from_loom <- function(lfile, genes,
   if (length(genes) > 1) {
 
     plots <- genes %>%
-      map(~{
+      purrr::map(~{
         message(paste0("plotting ", ..1))
-        plot_gene_violin(plot_df, !!sym(select_cols[x_index]), !!sym(..1))
+        plot_gene_violin(plot_df,
+                         !!rlang::sym(select_cols[x_index]),
+                         !!rlang::sym(..1))
       })
 
     if (combine) {
-      plots <- plots %>%
-        cowplot::plot_grid(plotlist = ., ncol = ncol)
+      plots <- cowplot::plot_grid(plotlist = plots, ncol = ncol)
     }
 
   } else {
-    plots <- plot_gene_violin(plot_df, !!sym(select_cols[x_index]), !!sym(genes))
+    plots <- plot_gene_violin(plot_df,
+                              !!rlang::sym(select_cols[x_index]),
+                              !!rlang::sym(genes))
   }
 
 
@@ -127,7 +133,7 @@ plot_umap <- function(plot_df,
                       label = FALSE, label_text_size = 6,
                       reorder_points = TRUE,
                       drop_na = TRUE) {
-  color_sym <- sym(color_str)
+  color_sym <- rlang::sym(color_str)
 
   if (reorder_points & !is.null(color_str)) {
     plot_df <- plot_df %>%
@@ -141,10 +147,10 @@ plot_umap <- function(plot_df,
 
   p <- plot_df %>%
     ggplot2::ggplot() +
-    ggplot2::aes(!!sym(umap1_str), !!sym(umap2_str)) +
+    ggplot2::aes(!!rlang::sym(umap1_str), !!rlang::sym(umap2_str)) +
     ggplot2::geom_point(size = pt_size, stroke = pt_stroke) +
     ggplot2::coord_fixed() +
-    ggplot2::guides(colour = guide_legend(override.aes = list(size = legend_pt_size)))
+    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = legend_pt_size)))
 
   if (!is.null(color_str)) {
     p <- p + ggplot2::aes(color = !!color_sym)
@@ -152,12 +158,14 @@ plot_umap <- function(plot_df,
   if (label) {
     p <- p +
       ggrepel::geom_text_repel(
-        ggplot2::aes(UMAP_1, UMAP_2, label = !!color_sym),
+        ggplot2::aes(!!rlang::sym(umap1_str),
+                     !!rlang::sym(umap2_str),
+                     label = !!color_sym),
         color = "black", size = label_text_size,
         data = ~..1 %>%
           dplyr::group_by(!!color_sym) %>%
-          dplyr::summarise(UMAP_1 = mean(!!sym(umap1_str)),
-                           UMAP_2 = mean(!!sym(umap2_str)),
+          dplyr::summarise(UMAP_1 = mean(!!rlang::sym(umap1_str)),
+                           UMAP_2 = mean(!!rlang::sym(umap2_str)),
                            .groups = "drop")
       )
   }
@@ -168,10 +176,9 @@ plot_umap <- function(plot_df,
 detect_umap_cols <- function(lfile, umap_str = "UMAP") {
 
   message("...Automatically detecting UMAP cols...")
-  umap_cols <- lfile[["col_attrs"]] %>%
-    names() %>%
-    stringr::str_subset(umap_str) %>%
-    sort() %>% .[1:2]
+  all_umap_names <- names(lfile$col.attrs) %>%
+    stringr::str_subset(umap_str)
+  umap_cols <- sort(all_umap_names)[1:2]
   message(paste0("UMAP col detected as ", umap_cols, "\n"))
 
   return(umap_cols)
@@ -181,10 +188,9 @@ detect_umap_cols <- function(lfile, umap_str = "UMAP") {
 detect_pca_cols <- function(lfile, pc_str = "RNAPC") {
 
   message("...Automatically detecting PCA cols...")
-  pca_cols <- lfile[["col_attrs"]] %>%
-    names() %>%
-    stringr::str_subset(pc_str) %>%
-    sort() %>% .[1:2]
+  all_pca_names <- names(lfile[["col_attrs"]]) %>%
+    stringr::str_subset(pc_str)
+  pca_cols <- sort(all_pca_names)[1:2]
   message(paste0("PCA col detected as ", pca_cols, "\n"))
 
   return(pca_cols)
@@ -217,8 +223,6 @@ detect_pca_cols <- function(lfile, pc_str = "RNAPC") {
 #'  also drops rows with "NA" strings
 #' @param pt_size (default: 0.1)
 #' @param pt_stroke (default: 0.5)
-#' @param
-#'
 #'
 #' Also will pass any additional named arguments into `plot_umap`
 #'
@@ -240,7 +244,7 @@ plot_gene_umap_from_loom <- function(lfile, genes,
                                      pt_size = 0.1,
                                      pt_stroke = 0.5) {
 
-  genes <- genes %>% set_names()
+  genes <- rlang::set_names(genes)
 
   message("Retreiving genes from loom...")
   gene_df <- get_genes_from_loom(lfile, genes, select_layer, select_row)
@@ -285,7 +289,7 @@ plot_gene_umap_from_loom <- function(lfile, genes,
   } else {
 
     plot_list <- genes %>%
-      map(~{
+      purrr::map(~{
         message(paste0("plotting ", ..1))
         plot_umap(plot_df, ..1,
                   umap1_str = umap_cols[1], umap2_str = umap_cols[2],
@@ -297,8 +301,7 @@ plot_gene_umap_from_loom <- function(lfile, genes,
 
     if (combine) {
       message("Combining plots...")
-      plots <- plot_list %>%
-        cowplot::plot_grid(plotlist = ., ncol = ncol)
+      plots <- cowplot::plot_grid(plotlist = plot_list, ncol = ncol)
     } else {
       plots <- plot_list
     }
@@ -335,6 +338,11 @@ plot_gene_umap_from_loom <- function(lfile, genes,
 #'  also drops rows with "NA" strings
 #' @param pt_size (default: 0.1)
 #' @param pt_stroke (default: 0.5)
+#' @param factor_vars character vector specifying which variables to set as factors (default: NULL)
+#'
+#' @example
+#' plot_var_umap_from_loom(lfile, "RNA_snn_res.0.1", umap_cols = c("UMAP_1", "UMAP_2"))
+#' plot_var_umap_from_loom(lfile, "leiden_0.4", umap_df = umap_df, select_row = "var_names")
 #'
 #' @return A ggplot object showing UMAP plot
 #' @export
@@ -351,7 +359,8 @@ plot_var_umap_from_loom <- function(lfile, var_str,
                                     combine = TRUE,
                                     drop_na = TRUE,
                                     pt_size = 0.1,
-                                    pt_stroke = 0.5) {
+                                    pt_stroke = 0.5,
+                                    factor_vars = NULL) {
 
   var_df <- purrr::map_dfc(var_str, ~lfile[[paste0("col_attrs/", ..1)]][])
   colnames(var_df) <- var_str
@@ -383,6 +392,12 @@ plot_var_umap_from_loom <- function(lfile, var_str,
 
   plot_df <- dplyr::bind_cols(var_df, umap_df)
 
+  if (!is.null(factor_vars)) {
+    for (factor_var_str in factor_vars) {
+      plot_df[[factor_var_str]] <- factor(plot_df[[factor_var_str]])
+    }
+  }
+
   if (length(var_str) == 1) {
     plots <- plot_umap(plot_df, var_str,
                        umap1_str = umap_cols[1], umap2_str = umap_cols[2],
@@ -393,7 +408,7 @@ plot_var_umap_from_loom <- function(lfile, var_str,
   } else {
 
     plot_list <- var_str %>%
-      map(~plot_umap(plot_df, ..1,
+      purrr::map(~plot_umap(plot_df, ..1,
                      umap1_str = umap_cols[1], umap2_str = umap_cols[2],
                      drop_na = drop_na,
                      label = label,
@@ -401,8 +416,7 @@ plot_var_umap_from_loom <- function(lfile, var_str,
                      pt_stroke = pt_stroke))
 
     if (combine) {
-      plots <- plot_list %>%
-        cowplot::plot_grid(plotlist = ., ncol = ncol)
+      plots <- cowplot::plot_grid(plotlist = plot_list, ncol = ncol)
     } else {
       plots <- plot_list
     }

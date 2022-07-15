@@ -1,6 +1,7 @@
 #' Export metadata from loom for the Single Cell Portal
 #'
 #' @param so Seurat object
+#' @param filename file path for export
 #' @param clustering_assay string specifying clustering assay
 #' @param species__ontology_label string specifying species__ontology_label required by the Single Cell Portal (default: "Mus musculus")
 #' @param species string specifying species required by the Single Cell Portal (default: NA)
@@ -9,7 +10,7 @@
 #' @param organ__ontology_label etc. (default: "skin epidermis")
 #' @param organ etc. (default: "UBERON_0001003")
 #' @param library_preparation_protocol__ontology_label etc. (default: "10x 5' v2")
-#' @param library_preparation_protcol etc. (default: "EFO_0009900")
+#' @param library_preparation_protocol etc. (default: "EFO_0009900")
 #'
 #' @return connection to the newly created loom file
 #' @export
@@ -43,13 +44,13 @@ seurat_add_to_loom_init <- function(so, filename,
 
   metadata_df <- so@meta.data %>%
     tibble::as_tibble(rownames = "cell") %>%
-    dplyr::select(cell, orig.ident) %>%
+    dplyr::select(!!rlang::sym("cell"), !!rlang::sym("orig.ident")) %>%
     dplyr::rename(
       NAME = cell,
       biosample_id = orig.ident
     ) %>%
     dplyr::mutate(
-      donor_id = str_extract(biosample_id, "-[:alpha:]*-"),
+      donor_id = stringr::str_extract(biosample_id, "-[:alpha:]*-"),
       species = ifelse(species__ontology_label == "Mus musculus", "NCBITaxon_10090", species),
       species__ontology_label = species__ontology_label,
       disease = disease,
@@ -60,7 +61,7 @@ seurat_add_to_loom_init <- function(so, filename,
       library_preparation_protocol__ontology_label = library_preparation_protocol__ontology_label,
       sex = "unknown"
     ) %>%
-    dplyr::select(s-tr_subset(colnames(.), "snn_res"))
+    dplyr::select(stringr::str_subset(colnames(.), "snn_res"))
   metadata <- metadata_df %>% purrr::map(c)
   lfile$add.col.attribute(metadata)
 
@@ -87,35 +88,35 @@ seurat_add_to_loom <- function(so, lfile,
                                npcs = 30,
                                str_subset_regex_cols = "_snn_res") {
 
-  if (so@project.name %>% str_detect("__")) {
+  if (so@project.name %>% stringr::str_detect("__")) {
     stop("Error: Seurat project name cannot contain '__' as a substring. Please rename. ")
   }
 
   # TODO add column to indicate cell inclusion
 
-  gene_df <- tibble(gene = rownames(so)) %>%
-    mutate(Selected = gene %in% VariableFeatures(so))
+  gene_df <- tibble::tibble(gene = rownames(so)) %>%
+    dplyr::mutate(Selected = gene %in% Seurat::VariableFeatures(so))
   pca_gene_loadings <- so@reductions[[paste0(clustering_assay, "_pca")]]@feature.loadings %>%
-    as_tibble(rownames = "gene") %>%
-    select(1:31)
+    tibble::as_tibble(rownames = "gene") %>%
+    dplyr::select(1:31)
   gene_df <- gene_df %>%
-    left_join(pca_gene_loadings, by = "gene") %>%
-    column_to_rownames("gene")
+    dplyr::left_join(pca_gene_loadings, by = "gene") %>%
+    tibble::column_to_rownames("gene")
   colnames(gene_df) <- paste0(so@project.name, "__", colnames(gene_df))
 
   pca_df <- so@reductions[[paste0(clustering_assay, "_pca")]]@cell.embeddings %>%
-    as_tibble(rownames = "cell") %>% .[1:npcs]
+    tibble::as_tibble(rownames = "cell") %>% .[1:npcs]
   umap_df <- so@reductions$umap@cell.embeddings %>%
-    as_tibble(rownames = "cell")
+    tibble::as_tibble(rownames = "cell")
   cluster_df <- so@meta.data %>%
-    select(str_subset(colnames(.), str_subset_regex_cols)) %>%
-    as_tibble(rownames = "cell")
+    dplyr::select(stringr::str_subset(colnames(.), str_subset_regex_cols)) %>%
+    tibble::as_tibble(rownames = "cell")
 
-  cell_df <- tibble(cell = lfile[["col_attrs/CellID"]][]) %>%
-    left_join(pca_df, by = "cell") %>%
-    left_join(umap_df, by = "cell") %>%
-    left_join(cluster_df, by = "cell") %>%
-    column_to_rownames("cell")
+  cell_df <- tibble::tibble(cell = lfile[["col_attrs/CellID"]][]) %>%
+    dplyr::left_join(pca_df, by = "cell") %>%
+    dplyr::left_join(umap_df, by = "cell") %>%
+    dplyr::left_join(cluster_df, by = "cell") %>%
+    tibble::column_to_rownames("cell")
   colnames(cell_df) <- paste0(so@project.name, "__",
                               paste0(clustering_assay, "_pca"), "__",
                               colnames(cell_df))
