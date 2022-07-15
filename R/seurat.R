@@ -36,11 +36,6 @@ seurat_add_to_loom_init <- function(so, filename,
     message("scale.data not found. Adding...")
     lfile$add.layer(list(scale.data = so@assays[[clustering_assay]]@scale.data))
   }
-  if (!("Selected" %in% names(lfile[["row_attrs"]]))) {
-    message("Selected not found. Adding...")
-    var_features <- list(Selected = as.integer(rownames(so@assays$RNA@counts) %in% Seurat::VariableFeatures(so)))
-    lfile$add.row.attribute(var_features)
-  }
 
   metadata_df <- so@meta.data %>%
     tibble::as_tibble(rownames = "cell") %>%

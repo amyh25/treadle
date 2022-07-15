@@ -22,7 +22,8 @@ Imports:
     magrittr,
     readr,
     Seurat,
-    rlang
+    rlang,
+    rhdf5
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

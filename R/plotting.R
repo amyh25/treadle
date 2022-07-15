@@ -173,11 +173,17 @@ plot_umap <- function(plot_df,
 }
 
 
-detect_umap_cols <- function(lfile, umap_str = "UMAP") {
+detect_umap_cols <- function(lfile, umap_regex_str = "UMAP|umap") {
 
-  message("...Automatically detecting UMAP cols...")
+  if (lfile) {
+
+  }
   all_umap_names <- names(lfile$col.attrs) %>%
-    stringr::str_subset(umap_str)
+    stringr::str_subset(umap_regex_str)
+  message("...Automatically detecting UMAP cols...")
+  if (length(all_umap_names) == 0) {
+    stop(paste0("No cols detected with regex '", umap_regex_str, "'"))
+  }
   umap_cols <- sort(all_umap_names)[1:2]
   message(paste0("UMAP col detected as ", umap_cols, "\n"))
 
@@ -230,19 +236,22 @@ detect_pca_cols <- function(lfile, pc_str = "RNAPC") {
 #' @export
 #'
 
-plot_gene_umap_from_loom <- function(lfile, genes,
-                                     umap_cols = NULL,
-                                     umap_df = NULL,
-                                     select_layer = "matrix",
-                                     select_row = "Gene",
-                                     select_cols = NULL,
-                                     subset_cols = NULL,
-                                     ncol = length(genes),
-                                     label = FALSE,
-                                     combine = TRUE,
-                                     drop_na = TRUE,
-                                     pt_size = 0.1,
-                                     pt_stroke = 0.5) {
+plot_gene_umap_from_loom <- function(
+  lfile,
+  genes,
+  umap_cols = NULL,
+  umap_df = NULL,
+  select_layer = "matrix",
+  select_row = "Gene",
+  select_cols = NULL,
+  subset_cols = NULL,
+  ncol = length(genes),
+  label = FALSE,
+  combine = TRUE,
+  drop_na = TRUE,
+  pt_size = 0.1,
+  pt_stroke = 0.5
+) {
 
   genes <- rlang::set_names(genes)
 
