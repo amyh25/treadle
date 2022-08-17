@@ -1,17 +1,16 @@
-#' Plot gene violin
+#' Plot violin
 #'
 #' @param plot_df a data frame with a categorical variable and gene expression
-#' @param x categorical variable (symbol)
-#' @param gene gene expression variable (symbol)
+#' @param x categorical variable on x axis as symbol
+#' @param var variable as symbol
 #'
 #' @example
 #' plot_gene_violin(plot_df, orig.ident, Cd8a)
 #'
 #' @return A ggplot object showing violin plot
 #' @export
-#'
 
-plot_gene_violin <- function(plot_df, x, gene) {
+plot_violin <- function(plot_df, x, var) {
   x <- rlang::enquo(x)
   gene <- rlang::enquo(gene)
 
@@ -61,7 +60,9 @@ subset_columns <- function(plot_df, subset_cols) {
 #' @export
 #'
 
-plot_gene_violin_from_loom <- function(lfile, genes,
+
+plot_gene_violin_from_loom <- function(lfile,
+                                       genes,
                                        select_layer = "matrix",
                                        select_row = "Gene",
                                        select_cols = "biosample_id",
@@ -69,34 +70,33 @@ plot_gene_violin_from_loom <- function(lfile, genes,
                                        x_index = 1,
                                        ncol = length(genes),
                                        combine = TRUE) {
-
   genes <- rlang::set_names(genes)
-  gene_df <- get_genes_from_loom(lfile, genes, select_layer, select_row)
+  gene_df <-
+    get_genes_from_loom(lfile, genes, select_layer, select_row)
 
-  cell_selected_metadata_df <- purrr::map_dfc(select_cols, ~lfile[[paste0("col_attrs/", ..1)]][])
+  cell_selected_metadata_df <-
+    purrr::map_dfc(select_cols, ~ lfile[[paste0("col_attrs/", ..1)]][])
   colnames(cell_selected_metadata_df) <- select_cols
 
   plot_df <- dplyr::bind_cols(gene_df, cell_selected_metadata_df)
   plot_df <- subset_columns(plot_df, subset_cols)
 
   if (length(genes) > 1) {
-
     plots <- genes %>%
-      purrr::map(~{
+      purrr::map( ~ {
         message(paste0("plotting ", ..1))
-        plot_gene_violin(plot_df,
-                         !!rlang::sym(select_cols[x_index]),
-                         !!rlang::sym(..1))
+        plot_violin(plot_df, !!rlang::sym(select_cols[x_index]), !!rlang::sym(..1))
       })
 
     if (combine) {
       plots <- cowplot::plot_grid(plotlist = plots, ncol = ncol)
     }
 
+
   } else {
-    plots <- plot_gene_violin(plot_df,
-                              !!rlang::sym(select_cols[x_index]),
-                              !!rlang::sym(genes))
+    plots <- plot_violin(plot_df,
+                         !!rlang::sym(select_cols[x_index]),
+                         !!rlang::sym(genes))
   }
 
 
@@ -110,14 +110,16 @@ plot_gene_violin_from_loom <- function(lfile, genes,
 #' @param umap1_str String specifying column name for x-axis (default: "UMAP_1")
 #' @param umap2_str String specifying column name for x-axis (default: "UMAP_2")
 #' @param legend_pt_size Point size for dots in legend (default: 3)
-#' @param pt_size Point size for dots in plot (default: 0.1)
-#' @param pt_stroke Stroke size for dots in plot (default: 0.5)
+#' @param pt_size Point size for dots in plot (default: 2). Parameter passed to
+#'  `pointsize` in scattermore::geom_scattermore or `size` in ggplot2::geom_point
+#' @param pt_stroke Stroke size for dots in plot (default: 0.1)
 #' @param label If true, plots label of color_str on plot
 #' @param label_text_size Size of label text (default: 6)
 #' @param reorder_points Whether or not to order the points by increasing
 #' values by the color variable (default: TRUE)
 #' @param drop_na Whether or not to drop NAs per the color aesthetic;
 #'  also drops rows with "NA" strings
+#' @param rasterize_points Whether or not to rasterize points
 #'
 #' @return A ggplot object showing UMAP plot
 #' @export
@@ -128,11 +130,14 @@ plot_umap <- function(plot_df,
                       umap1_str = "UMAP_1",
                       umap2_str = "UMAP_2",
                       legend_pt_size = 3,
-                      pt_size = 0.1,
-                      pt_stroke = 0.5,
+                      pt_size = 2,
+                      pt_stroke = 0.1,
                       label = FALSE, label_text_size = 6,
                       reorder_points = TRUE,
-                      drop_na = TRUE) {
+                      drop_na = TRUE,
+                      rasterize_points = TRUE,
+                      pixels = c(1024, 1024),
+                      use_scattermost = FALSE) {
   color_sym <- rlang::sym(color_str)
 
   if (reorder_points & !is.null(color_str)) {
@@ -148,9 +153,19 @@ plot_umap <- function(plot_df,
   p <- plot_df %>%
     ggplot2::ggplot() +
     ggplot2::aes(!!rlang::sym(umap1_str), !!rlang::sym(umap2_str)) +
-    ggplot2::geom_point(size = pt_size, stroke = pt_stroke) +
-    ggplot2::coord_fixed() +
-    ggplot2::guides(colour = ggplot2::guide_legend(override.aes = list(size = legend_pt_size)))
+    ggplot2::coord_fixed()
+  if (rasterize_points) {
+    if (use_scattermost) {
+      stop("Currently under implementation. Please set to FALSE for now!")
+    } else {
+      p <- p + scattermore::geom_scattermore(pointsize = pt_size, pixels = pixels)
+    }
+  } else {
+    message("rasterize_points set to FALSE. Rendering every point (warning, may cause slow down)")
+    p <- p + ggplot2::geom_point(size = pt_size, stroke = pt_stroke)
+  }
+
+
 
   if (!is.null(color_str)) {
     p <- p + ggplot2::aes(color = !!color_sym)
@@ -175,9 +190,6 @@ plot_umap <- function(plot_df,
 
 detect_umap_cols <- function(lfile, umap_regex_str = "UMAP|umap") {
 
-  if (lfile) {
-
-  }
   all_umap_names <- names(lfile$col.attrs) %>%
     stringr::str_subset(umap_regex_str)
   message("...Automatically detecting UMAP cols...")
