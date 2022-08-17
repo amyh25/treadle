@@ -9,11 +9,11 @@
 
 plot_violin <- function(plot_df, x, var) {
   x <- rlang::enquo(x)
-  gene <- rlang::enquo(gene)
+  var <- rlang::enquo(var)
 
   plot_df %>%
     ggplot2::ggplot() +
-    ggplot2::aes(!!x, !!gene, fill = !!x) +
+    ggplot2::aes(!!x, !!var, fill = !!x) +
     ggplot2::geom_violin(scale = "width")
 }
 
