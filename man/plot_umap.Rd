@@ -10,12 +10,15 @@ plot_umap(
   umap1_str = "UMAP_1",
   umap2_str = "UMAP_2",
   legend_pt_size = 3,
-  pt_size = 0.1,
-  pt_stroke = 0.5,
+  pt_size = 2,
+  pt_stroke = 0.1,
   label = FALSE,
   label_text_size = 6,
   reorder_points = TRUE,
-  drop_na = TRUE
+  drop_na = TRUE,
+  rasterize_points = TRUE,
+  pixels = c(1024, 1024),
+  use_scattermost = FALSE
 )
 }
 \arguments{
@@ -29,9 +32,10 @@ plot_umap(
 
 \item{legend_pt_size}{Point size for dots in legend (default: 3)}
 
-\item{pt_size}{Point size for dots in plot (default: 0.1)}
+\item{pt_size}{Point size for dots in plot (default: 2). Parameter passed to
+\code{pointsize} in scattermore::geom_scattermore or \code{size} in ggplot2::geom_point}
 
-\item{pt_stroke}{Stroke size for dots in plot (default: 0.5)}
+\item{pt_stroke}{Stroke size for dots in plot (default: 0.1)}
 
 \item{label}{If true, plots label of color_str on plot}
 
@@ -42,6 +46,8 @@ values by the color variable (default: TRUE)}
 
 \item{drop_na}{Whether or not to drop NAs per the color aesthetic;
 also drops rows with "NA" strings}
+
+\item{rasterize_points}{Whether or not to rasterize points}
 }
 \value{
 A ggplot object showing UMAP plot

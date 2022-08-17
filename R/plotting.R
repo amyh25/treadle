@@ -4,9 +4,6 @@
 #' @param x categorical variable on x axis as symbol
 #' @param var variable as symbol
 #'
-#' @example
-#' plot_gene_violin(plot_df, orig.ident, Cd8a)
-#'
 #' @return A ggplot object showing violin plot
 #' @export
 
@@ -361,7 +358,7 @@ plot_gene_umap_from_loom <- function(
 #' @param pt_stroke (default: 0.5)
 #' @param factor_vars character vector specifying which variables to set as factors (default: NULL)
 #'
-#' @example
+#' @examples
 #' plot_var_umap_from_loom(lfile, "RNA_snn_res.0.1", umap_cols = c("UMAP_1", "UMAP_2"))
 #' plot_var_umap_from_loom(lfile, "leiden_0.4", umap_df = umap_df, select_row = "var_names")
 #'

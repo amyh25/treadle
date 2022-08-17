@@ -66,3 +66,8 @@ A ggplot object showing UMAP plot
 \description{
 Plot umap from loom file with metadata
 }
+\examples{
+plot_var_umap_from_loom(lfile, "RNA_snn_res.0.1", umap_cols = c("UMAP_1", "UMAP_2"))
+plot_var_umap_from_loom(lfile, "leiden_0.4", umap_df = umap_df, select_row = "var_names")
+
+}
