@@ -7,7 +7,7 @@ Description: To help make your loom object analyses more efficient.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Imports: 
     cowplot,
     dplyr,
@@ -23,7 +23,8 @@ Imports:
     readr,
     Seurat,
     rlang,
-    rhdf5
+    rhdf5,
+    scattermore
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
