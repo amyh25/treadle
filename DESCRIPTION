@@ -1,6 +1,6 @@
 Package: treadle
 Title: Analyze loom objects
-Version: 0.0.0.9000
+Version: 0.0.0.9900
 Authors@R: 
     person("Amy", "Huang", , "amy_huang@hms.harvard.edu", role = c("aut", "cre"))
 Description: To help make your loom object analyses more efficient. 
