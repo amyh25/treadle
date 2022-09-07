@@ -4,7 +4,7 @@
 #'
 #' @param umap_df a tibble containing umap data
 #' @param var_str (optional) variable encoded in color of plot, by default will grab the third column in \code{umap_df}
-#' @param umap_cols (optional) vector of strings specifying umap columns to plot
+#' @param umap_cols (optional) vector of strings specifying umap columns to plot, by default will grab the first two columns in \code{umap_df}
 #' @param pt_size point size passed to \code{geom_scattermore} or \code{geom_point}
 #' @param rasterize rasterize with \code{geom_scattermore} or not with \code{geom_point}
 #' @param pixels number of pixels if rasterize is TRUE
@@ -27,10 +27,6 @@ plot_umap <- function(umap_df,
   # if no variable specified, grab the third column
   if (is.na(var_str))
     var_str <- colnames(umap_df)[3]
-  else {
-    if (!(length(umap_cols) == 2))
-      stop("umap_cols must be a character vector of length 2")
-  }
 
   var_sym <- rlang::sym(var_str)
   if (reorder_points)
@@ -40,6 +36,10 @@ plot_umap <- function(umap_df,
   # set umap cols if not specified
   if (is.na(umap_cols))
     umap_cols <- colnames(umap_df)[1:2]
+  else {
+    if (!(length(umap_cols) == 2))
+      stop("umap_cols must be a character vector of length 2")
+  }
 
   # actually plot
   p <- umap_df %>%
