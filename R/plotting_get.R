@@ -9,10 +9,10 @@
 #' @export
 
 get_metadata <- function(lfile, obs = NA) {
-  expected_dim <- l_full[["matrix"]]$dims[1]
+  expected_dim <- lfile[["matrix"]]$dims[1]
   if (is.na(obs))
     obs <- names(lfile$col.attrs)
-  metadata_full <- obs %>%
+  metadata <- obs %>%
     unname() %>%
     set_names() %>%
     map_dfc(~ {
@@ -20,6 +20,7 @@ get_metadata <- function(lfile, obs = NA) {
         lfile[[paste0("col_attrs/", ..1)]][]
       }
     })
+  return(metadata)
 }
 
 #' get_genes
