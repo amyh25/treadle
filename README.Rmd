@@ -38,3 +38,9 @@ devtools::install_github("amyh25/treadle")
 <!-- ## basic example code -->
 <!-- ``` -->
 
+## Versions
+
+Version number | Release | Description
+---|---|---
+0.0.0.9000|Development version|Visualization functions output ggplots directly
+0.0.0.9900|Development version|Visualization functions refactored to be less monolithic

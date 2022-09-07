@@ -13,12 +13,11 @@ plot_violin <- function(plot_df, x, var) {
 
   plot_df %>%
     ggplot2::ggplot() +
-    ggplot2::aes(!!x, !!var, fill = !!x) +
+    ggplot2::aes(!!x,!!var, fill = !!x) +
     ggplot2::geom_violin(scale = "width")
 }
 
 subset_columns <- function(plot_df, subset_cols) {
-
   if (!is.null(subset_cols)) {
     if (length(names(subset_cols)) == 0) {
       stop("Subset_cols must be a vector named by the relevant columns")
@@ -69,7 +68,7 @@ plot_gene_violin_from_loom <- function(lfile,
                                        combine = TRUE) {
   genes <- rlang::set_names(genes)
   gene_df <-
-    get_genes_from_loom(lfile, genes, select_layer, select_row)
+    get_genes(lfile, genes, select_layer, select_row)
 
   cell_selected_metadata_df <-
     purrr::map_dfc(select_cols, ~ lfile[[paste0("col_attrs/", ..1)]][])
@@ -80,9 +79,9 @@ plot_gene_violin_from_loom <- function(lfile,
 
   if (length(genes) > 1) {
     plots <- genes %>%
-      purrr::map( ~ {
+      purrr::map(~ {
         message(paste0("plotting ", ..1))
-        plot_violin(plot_df, !!rlang::sym(select_cols[x_index]), !!rlang::sym(..1))
+        plot_violin(plot_df,!!rlang::sym(select_cols[x_index]),!!rlang::sym(..1))
       })
 
     if (combine) {
@@ -91,9 +90,7 @@ plot_gene_violin_from_loom <- function(lfile,
 
 
   } else {
-    plots <- plot_violin(plot_df,
-                         !!rlang::sym(select_cols[x_index]),
-                         !!rlang::sym(genes))
+    plots <- plot_violin(plot_df,!!rlang::sym(select_cols[x_index]),!!rlang::sym(genes))
   }
 
 
@@ -129,7 +126,8 @@ plot_umap <- function(plot_df,
                       legend_pt_size = 3,
                       pt_size = 2,
                       pt_stroke = 0.1,
-                      label = FALSE, label_text_size = 6,
+                      label = FALSE,
+                      label_text_size = 6,
                       reorder_points = TRUE,
                       drop_na = TRUE,
                       rasterize_points = TRUE,
@@ -149,13 +147,14 @@ plot_umap <- function(plot_df,
 
   p <- plot_df %>%
     ggplot2::ggplot() +
-    ggplot2::aes(!!rlang::sym(umap1_str), !!rlang::sym(umap2_str)) +
+    ggplot2::aes(!!rlang::sym(umap1_str),!!rlang::sym(umap2_str)) +
     ggplot2::coord_fixed()
   if (rasterize_points) {
     if (use_scattermost) {
       stop("Currently under implementation. Please set to FALSE for now!")
     } else {
-      p <- p + scattermore::geom_scattermore(pointsize = pt_size, pixels = pixels)
+      p <-
+        p + scattermore::geom_scattermore(pointsize = pt_size, pixels = pixels)
     }
   } else {
     message("rasterize_points set to FALSE. Rendering every point (warning, may cause slow down)")
@@ -170,38 +169,25 @@ plot_umap <- function(plot_df,
   if (label) {
     p <- p +
       ggrepel::geom_text_repel(
-        ggplot2::aes(!!rlang::sym(umap1_str),
-                     !!rlang::sym(umap2_str),
-                     label = !!color_sym),
-        color = "black", size = label_text_size,
-        data = ~..1 %>%
+        ggplot2::aes(
+          !!rlang::sym(umap1_str),!!rlang::sym(umap2_str),
+          label = !!color_sym
+        ),
+        color = "black",
+        size = label_text_size,
+        data = ~ ..1 %>%
           dplyr::group_by(!!color_sym) %>%
-          dplyr::summarise(UMAP_1 = mean(!!rlang::sym(umap1_str)),
-                           UMAP_2 = mean(!!rlang::sym(umap2_str)),
-                           .groups = "drop")
+          dplyr::summarise(
+            UMAP_1 = mean(!!rlang::sym(umap1_str)),
+            UMAP_2 = mean(!!rlang::sym(umap2_str)),
+            .groups = "drop"
+          )
       )
   }
   return(p)
 }
 
-
-detect_umap_cols <- function(lfile, umap_regex_str = "UMAP|umap") {
-
-  all_umap_names <- names(lfile$col.attrs) %>%
-    stringr::str_subset(umap_regex_str)
-  message("...Automatically detecting UMAP cols...")
-  if (length(all_umap_names) == 0) {
-    stop(paste0("No cols detected with regex '", umap_regex_str, "'"))
-  }
-  umap_cols <- sort(all_umap_names)[1:2]
-  message(paste0("UMAP col detected as ", umap_cols, "\n"))
-
-  return(umap_cols)
-}
-
-
 detect_pca_cols <- function(lfile, pc_str = "RNAPC") {
-
   message("...Automatically detecting PCA cols...")
   all_pca_names <- names(lfile[["col_attrs"]]) %>%
     stringr::str_subset(pc_str)
@@ -245,35 +231,30 @@ detect_pca_cols <- function(lfile, pc_str = "RNAPC") {
 #' @export
 #'
 
-plot_gene_umap_from_loom <- function(
-  lfile,
-  genes,
-  umap_cols = NULL,
-  umap_df = NULL,
-  select_layer = "matrix",
-  select_row = "Gene",
-  select_cols = NULL,
-  subset_cols = NULL,
-  ncol = length(genes),
-  label = FALSE,
-  combine = TRUE,
-  drop_na = TRUE,
-  pt_size = 0.1,
-  pt_stroke = 0.5
-) {
-
+plot_gene_umap_from_loom <- function(lfile,
+                                     genes,
+                                     umap_cols = NULL,
+                                     umap_df = NULL,
+                                     select_layer = "matrix",
+                                     select_row = "Gene",
+                                     select_cols = NULL,
+                                     subset_cols = NULL,
+                                     ncol = length(genes),
+                                     label = FALSE,
+                                     combine = TRUE,
+                                     drop_na = TRUE,
+                                     pt_size = 0.1,
+                                     pt_stroke = 0.5) {
   genes <- rlang::set_names(genes)
 
   message("Retreiving genes from loom...")
-  gene_df <- get_genes_from_loom(lfile, genes, select_layer, select_row)
+  gene_df <- get_genes(lfile, genes, select_layer, select_row)
 
   if (!is.null(umap_df)) {
-
     message("Using umap_df input, ignoring umap_cols. ")
     umap_cols <- colnames(umap_df)
 
   } else {
-
     if (is.null(umap_cols)) {
       message("UMAP cols, not specified, detecting...")
       umap_cols <- detect_umap_cols(lfile)
@@ -281,13 +262,15 @@ plot_gene_umap_from_loom <- function(
     if (length(umap_cols) != 2) {
       stop("Error: umap_cols must be a character vector of length 2")
     }
-    umap_df <- purrr::map_dfc(umap_cols, ~lfile[[paste0("col_attrs/", ..1)]][])
+    umap_df <-
+      purrr::map_dfc(umap_cols, ~ lfile[[paste0("col_attrs/", ..1)]][])
     colnames(umap_df) <- umap_cols
 
   }
 
   if (!is.null(select_cols)) {
-    cell_selected_metadata_df <- purrr::map_dfc(select_cols, ~lfile[[paste0("col_attrs/", ..1)]][])
+    cell_selected_metadata_df <-
+      purrr::map_dfc(select_cols, ~ lfile[[paste0("col_attrs/", ..1)]][])
     colnames(cell_selected_metadata_df) <- select_cols
     gene_df <- dplyr::bind_cols(gene_df, cell_selected_metadata_df)
   }
@@ -297,23 +280,30 @@ plot_gene_umap_from_loom <- function(
 
   message("plotting genes....")
   if (length(genes) == 1) {
-    plots <- plot_umap(plot_df, genes,
-                       umap1_str = umap_cols[1], umap2_str = umap_cols[2],
-                       drop_na = drop_na,
-                       label = label,
-                       pt_size = pt_size,
-                       pt_stroke = pt_stroke) +
+    plots <- plot_umap(
+      plot_df,
+      genes,
+      umap1_str = umap_cols[1],
+      umap2_str = umap_cols[2],
+      drop_na = drop_na,
+      label = label,
+      pt_size = pt_size,
+      pt_stroke = pt_stroke
+    ) +
       ggplot2::scale_color_gradient(low = "grey", high = "darkblue")
   } else {
-
     plot_list <- genes %>%
-      purrr::map(~{
+      purrr::map( ~ {
         message(paste0("plotting ", ..1))
-        plot_umap(plot_df, ..1,
-                  umap1_str = umap_cols[1], umap2_str = umap_cols[2],
-                  label = label,
-                  pt_size = pt_size,
-                  pt_stroke = pt_stroke) +
+        plot_umap(
+          plot_df,
+          ..1,
+          umap1_str = umap_cols[1],
+          umap2_str = umap_cols[2],
+          label = label,
+          pt_size = pt_size,
+          pt_stroke = pt_stroke
+        ) +
           ggplot2::scale_color_gradient(low = "grey", high = "darkblue")
       })
 
@@ -362,7 +352,8 @@ plot_gene_umap_from_loom <- function(
 #' @export
 #'
 
-plot_var_umap_from_loom <- function(lfile, var_str,
+plot_var_umap_from_loom <- function(lfile,
+                                    var_str,
                                     select_cols = NULL,
                                     umap_df = NULL,
                                     umap_cols = NULL,
@@ -375,17 +366,15 @@ plot_var_umap_from_loom <- function(lfile, var_str,
                                     pt_size = 0.1,
                                     pt_stroke = 0.5,
                                     factor_vars = NULL) {
-
-  var_df <- purrr::map_dfc(var_str, ~lfile[[paste0("col_attrs/", ..1)]][])
+  var_df <-
+    purrr::map_dfc(var_str, ~ lfile[[paste0("col_attrs/", ..1)]][])
   colnames(var_df) <- var_str
 
   if (!is.null(umap_df)) {
-
     message("Using umap_df input, ignoring umap_cols. ")
     umap_cols <- colnames(umap_df)
 
   } else {
-
     if (is.null(umap_cols)) {
       message("UMAP cols, not specified, detecting...")
       umap_cols <- detect_umap_cols(lfile)
@@ -393,13 +382,15 @@ plot_var_umap_from_loom <- function(lfile, var_str,
     if (length(umap_cols) != 2) {
       stop("Error: umap_cols must be a character vector of length 2")
     }
-    umap_df <- purrr::map_dfc(umap_cols, ~lfile[[paste0("col_attrs/", ..1)]][])
+    umap_df <-
+      purrr::map_dfc(umap_cols, ~ lfile[[paste0("col_attrs/", ..1)]][])
     colnames(umap_df) <- umap_cols
 
   }
 
   if (!is.null(select_cols)) {
-    cell_selected_metadata_df <- purrr::map_dfc(select_cols, ~lfile[[paste0("col_attrs/", ..1)]][])
+    cell_selected_metadata_df <-
+      purrr::map_dfc(select_cols, ~ lfile[[paste0("col_attrs/", ..1)]][])
     colnames(cell_selected_metadata_df) <- select_cols
     var_df <- dplyr::bind_cols(var_df, cell_selected_metadata_df)
   }
@@ -413,21 +404,30 @@ plot_var_umap_from_loom <- function(lfile, var_str,
   }
 
   if (length(var_str) == 1) {
-    plots <- plot_umap(plot_df, var_str,
-                       umap1_str = umap_cols[1], umap2_str = umap_cols[2],
-                       drop_na = drop_na,
-                       label = label,
-                       pt_size = pt_size,
-                       pt_stroke = pt_stroke)
+    plots <- plot_umap(
+      plot_df,
+      var_str,
+      umap1_str = umap_cols[1],
+      umap2_str = umap_cols[2],
+      drop_na = drop_na,
+      label = label,
+      pt_size = pt_size,
+      pt_stroke = pt_stroke
+    )
   } else {
-
     plot_list <- var_str %>%
-      purrr::map(~plot_umap(plot_df, ..1,
-                     umap1_str = umap_cols[1], umap2_str = umap_cols[2],
-                     drop_na = drop_na,
-                     label = label,
-                     pt_size = pt_size,
-                     pt_stroke = pt_stroke))
+      purrr::map(
+        ~ plot_umap(
+          plot_df,
+          ..1,
+          umap1_str = umap_cols[1],
+          umap2_str = umap_cols[2],
+          drop_na = drop_na,
+          label = label,
+          pt_size = pt_size,
+          pt_stroke = pt_stroke
+        )
+      )
 
     if (combine) {
       plots <- cowplot::plot_grid(plotlist = plot_list, ncol = ncol)
@@ -439,5 +439,3 @@ plot_var_umap_from_loom <- function(lfile, var_str,
 
   return(plots)
 }
-
-

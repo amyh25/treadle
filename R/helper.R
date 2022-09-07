@@ -1,31 +1,20 @@
-#' Get genes from loom file
+#' Detect UMAP columns
 #'
-#' @param lfile a connected loom file
-#' @param genes a vector of strings specifying genes
-#' @param select_layer a string specifying the
-#'  layer to extract data from in the loom file (default: "matrix")
-#' @param select_row row in the loom file with gene names (default: "Gene")
+#' @param lfile link to a loom file
+#' @param umap_regex_str string regex to detect UMAP cols using `str_subset`
 #'
-#' @return A tibble with gene expression data
+#' @return a vector of strings of length 2 with names of columns
 #' @export
-#'
 
-get_genes_from_loom <- function(lfile, genes,
-                                select_layer = "matrix",
-                                select_row = "Gene") {
-
-  if (select_layer == "matrix") {
-    gene_df <- purrr::map_dfc(
-      genes,
-      ~{lfile[[select_layer]][, which(lfile[[paste0("row_attrs/", select_row)]][] == ..1)]}
-    )
-  } else {
-    gene_df <- purrr::map_dfc(
-      genes,
-      ~lfile[[paste0("layers/", select_layer)]][, which(lfile[[paste0("row_attrs/", select_row)]][] == ..1)]
-    )
+detect_umap_cols <- function(lfile, umap_regex_str = "UMAP|umap") {
+  all_umap_names <- names(lfile$col.attrs) %>%
+    stringr::str_subset(umap_regex_str)
+  message("...Automatically detecting UMAP cols...")
+  if (length(all_umap_names) == 0) {
+    stop(paste0("No cols detected with regex '", umap_regex_str, "'"))
   }
+  umap_cols <- sort(all_umap_names)[1:2]
+  message(paste0("UMAP col detected as ", umap_cols, "\n"))
 
-  colnames(gene_df) <- genes
-  return(gene_df)
+  return(umap_cols)
 }

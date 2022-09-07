@@ -1,3 +1,20 @@
+#' seurat_to_loom
+#'
+#' Creates a loom function from a Seurat object
+#'
+#' @param so Seurat object
+#' @param filename path to file
+#'
+#' @return connection to the newly created loom file
+#' @export
+
+seurat_to_loom <- function(so, filename) {
+  lfile <- SeuratDisk::as.loom(so, filename = filename)
+  lfile$close_all()
+  lfile <- loomR::connect(filename, skip.validate = TRUE, mode = "r+")
+  return(lfile)
+}
+
 #' Export metadata from loom for the Single Cell Portal
 #'
 #' @param so Seurat object
