@@ -33,7 +33,7 @@ plot_umap(
 
 \item{var_str}{(optional) variable encoded in color of plot, by default will grab the third column in \code{umap_df}}
 
-\item{umap_cols}{(optional) vector of strings specifying umap columns to plot}
+\item{umap_cols}{(optional) vector of strings specifying umap columns to plot, by default will grab the first two columns in \code{umap_df}}
 
 \item{pt_size}{point size passed to \code{geom_scattermore} or \code{geom_point}}
 

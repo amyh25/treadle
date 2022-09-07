@@ -3,6 +3,7 @@
 export("%>%")
 export(detect_umap_cols)
 export(get_genes)
+export(get_metadata)
 export(get_umap_df)
 export(plot_gene_umap_from_loom)
 export(plot_gene_violin_from_loom)

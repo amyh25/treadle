@@ -1,3 +1,27 @@
+#' get_metadata
+#'
+#' Get metadata from a connceted loom object
+#'
+#' @param lfile a connected loom object
+#' @param obs (optional) character vector with specified observations; by default will take all
+#'
+#' @return A tibble with metadata
+#' @export
+
+get_metadata <- function(lfile, obs = NA) {
+  expected_dim <- l_full[["matrix"]]$dims[1]
+  if (is.na(obs))
+    obs <- names(lfile$col.attrs)
+  metadata_full <- obs %>%
+    unname() %>%
+    set_names() %>%
+    map_dfc(~ {
+      if (lfile[[paste0("col_attrs/", ..1)]]$dims[1] == expected_dim) {
+        lfile[[paste0("col_attrs/", ..1)]][]
+      }
+    })
+}
+
 #' get_genes
 #'
 #' Get genes from a connected loom object
